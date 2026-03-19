@@ -1,0 +1,43 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'user', -- 'user' | 'admin'
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS shareholders (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  full_name TEXT NOT NULL,
+  share_count INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS meetings (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT,
+  scheduled_at TIMESTAMP WITHOUT TIME ZONE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS topics (
+  id SERIAL PRIMARY KEY,
+  meeting_id INTEGER NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS votes (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+  choice TEXT NOT NULL, -- 'for' | 'against' | 'abstain'
+  created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITHOUT TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_votes_topic ON votes(topic_id);
+CREATE INDEX IF NOT EXISTS idx_votes_user ON votes(user_id);
+

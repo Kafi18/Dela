@@ -1,0 +1,103 @@
+/* Строгий дизайн, без закруглений, спокойные пастельные тона */
+:root {
+  --bg-page: #f2f0ec;
+  --bg-card: #faf9f6;
+  --bg-input: #faf9f6;
+  --border: #ddd9d2;
+  --border-light: #e8e6e1;
+  --text: #2c2a26;
+  --text-muted: #5c5954;
+  --text-soft: #7a7772;
+  --accent-strong: #b3332a;
+  --accent-secondary: #245b7a;
+  --accent: #6b7c7a;
+  --accent-hover: #5a6b69;
+  --accent-light: #f3e4e3;
+  --accent-light-secondary: #e8eef0;
+  --error: #b3332a;
+  --radius: 0;
+  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --shadow: 0 1px 3px rgba(44, 42, 38, 0.08);
+  --shadow-card: 0 2px 12px rgba(44, 42, 38, 0.08);
+  --shadow-panel: 0 4px 24px rgba(44, 42, 38, 0.1);
+  --accent-bar: 3px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background-color: var(--bg-page);
+  background-image:
+    linear-gradient(180deg, rgba(36, 91, 122, 0.03) 0%, transparent 15%),
+    linear-gradient(
+      160deg,
+      #ebe5df 0%,
+      #f2f0ec 40%,
+      #f6f5f2 75%,
+      #faf9f6 100%
+    );
+  background-attachment: fixed;
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
+}
+
+input,
+select,
+button {
+  font-family: var(--font);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Общий стиль заголовков страниц — линия под заголовком с акцентом слева */
+.app-root .page-title {
+  padding-bottom: 10px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-light);
+  position: relative;
+}
+.app-root .page-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-strong) 0%, transparent 100%);
+}
