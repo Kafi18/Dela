@@ -32,10 +32,17 @@
 ## Без Docker (свой PostgreSQL)
 
 1. `npm install`
-2. `npm run setup` — создаст `server/.env` из примера
-3. Откройте `server/.env` и укажите **реальный** `DB_PASSWORD` и при необходимости `DB_USER`
-4. Создайте базу: `createdb shareholder_voting` (или через pgAdmin)
-5. `npm run dev:all`
+2. Один раз укажите пароль пользователя `postgres` (тот, что вы задали при установке PostgreSQL на Windows):
+
+   ```powershell
+   npm run env:localpg -- ВАШ_ПАРОЛЬ
+   ```
+
+   Скрипт сам запишет `server/.env` и создаст базу `shareholder_voting`, если её ещё нет.
+
+3. `npm run dev:all`
+
+Альтернатива вручную: `npm run setup`, правка `server/.env`, затем `createdb shareholder_voting`.
 
 ---
 

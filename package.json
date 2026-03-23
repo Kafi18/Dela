@@ -9,6 +9,7 @@
   "scripts": {
     "setup": "node scripts/setup-env.mjs",
     "env:docker": "node scripts/apply-docker-env.mjs",
+    "env:localpg": "node scripts/configure-local-postgres.mjs",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:wait": "node scripts/wait-for-postgres.mjs",
