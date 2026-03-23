@@ -77,6 +77,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import axios from 'axios';
+import { API_BASE } from '../config/api.js';
 
 const meetings = ref([]);
 const topics = ref([]);
@@ -140,8 +141,8 @@ const loadTopics = async () => {
   error.value = null;
   try {
     const [summaryRes, topicsRes] = await Promise.all([
-      axios.get('http://localhost:4000/api/voting/summary'),
-      axios.get('http://localhost:4000/api/voting/topics')
+      axios.get(`${API_BASE}/voting/summary`),
+      axios.get(`${API_BASE}/voting/topics`)
     ]);
     meetings.value = summaryRes.data.meetings || [];
     topics.value = topicsRes.data;
@@ -162,7 +163,7 @@ const submitVote = async (topic) => {
   if (!choice) return;
   votingTopicId.value = topic.id;
   try {
-    await axios.post('http://localhost:4000/api/voting/vote', {
+    await axios.post(`${API_BASE}/voting/vote`, {
       topicId: topic.id,
       choice
     });

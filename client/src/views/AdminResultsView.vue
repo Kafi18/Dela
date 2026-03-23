@@ -72,6 +72,7 @@ import { onMounted, ref, watch } from 'vue';
 import axios from 'axios';
 import { useRoute, RouterLink } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { API_BASE } from '../config/api.js';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -105,7 +106,7 @@ const loadResults = async () => {
   error.value = null;
   try {
     const { data } = await axios.get(
-      `http://localhost:4000/api/voting/admin/topic/${route.params.id}/results`
+      `${API_BASE}/voting/admin/topic/${route.params.id}/results`
     );
     topic.value = data.topic;
     votes.value = data.votes;

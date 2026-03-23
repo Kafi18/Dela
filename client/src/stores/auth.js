@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { API_BASE } from '../config/api.js';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = API_BASE;
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({

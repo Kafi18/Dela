@@ -25,6 +25,7 @@
 import { onMounted, ref } from 'vue';
 import { useRoute, RouterLink } from 'vue-router';
 import axios from 'axios';
+import { API_BASE } from '../config/api.js';
 
 const route = useRoute();
 const meeting = ref(null);
@@ -47,9 +48,7 @@ onMounted(async () => {
   loading.value = true;
   error.value = null;
   try {
-    const { data } = await axios.get(
-      `http://localhost:4000/api/voting/meeting/${route.params.id}`
-    );
+    const { data } = await axios.get(`${API_BASE}/voting/meeting/${route.params.id}`);
     meeting.value = data;
   } catch (e) {
     error.value = e.response?.data?.message || 'Не удалось загрузить информацию о собрании';

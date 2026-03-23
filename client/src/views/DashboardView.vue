@@ -89,6 +89,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
 import axios from 'axios';
+import { API_BASE } from '../config/api.js';
 
 const summary = reactive({
   meetings: [],
@@ -133,7 +134,7 @@ onMounted(async () => {
   loading.value = true;
   error.value = null;
   try {
-    const { data } = await axios.get('http://localhost:4000/api/voting/summary');
+    const { data } = await axios.get(`${API_BASE}/voting/summary`);
     summary.meetings = data.meetings;
     summary.topics = data.topics;
     summary.shareholders = data.shareholders;
