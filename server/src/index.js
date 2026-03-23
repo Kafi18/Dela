@@ -12,6 +12,7 @@ import { pool, useEmbeddedDb } from './lib/db.js';
 import { ensureSchema } from './lib/bootstrap.js';
 import { seed } from './seed.js';
 import { applyEmbeddedPersistenceToDb } from './lib/embeddedPersistence.js';
+import { promoteBuiltInAdmins } from './lib/promoteAdmins.js';
 
 function logErr(label, e) {
   const safe = e?.message ? String(e.message).replace(/[^\x20-\x7E\n]/g, '?') : String(e);
@@ -106,6 +107,11 @@ async function start() {
     } catch (e) {
       logErr('Embedded persistence error:', e);
     }
+  }
+  try {
+    await promoteBuiltInAdmins(pool);
+  } catch (e) {
+    logErr('promoteBuiltInAdmins error:', e);
   }
   const server = await listenWithFallback(app, preferredPort);
   server.on('error', (err) => logErr('HTTP server error:', err));
