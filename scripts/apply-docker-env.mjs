@@ -9,6 +9,7 @@ const dest = path.join(rootDir, 'server', '.env');
 /** Совпадает с docker-compose.yml — не нужно править пароль вручную */
 const content = `# Автоматически создано для Docker (npm run env:docker / START_PROJECT.bat)
 # Пароль совпадает с docker-compose.yml
+# Не задавайте DATABASE_URL здесь — старая строка перебивала бы пароль и ломала вход (28P01).
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres

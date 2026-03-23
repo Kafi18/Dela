@@ -8,6 +8,15 @@ import { pool } from './lib/db.js';
 import { ensureSchema } from './lib/bootstrap.js';
 import { seed } from './seed.js';
 
+function logErr(label, e) {
+  const safe = e?.message ? String(e.message).replace(/[^\x20-\x7E\n]/g, '?') : String(e);
+  console.error(`${label} code=${e?.code || 'n/a'} ${safe}`);
+}
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -34,17 +43,20 @@ async function start() {
   try {
     await ensureSchema();
   } catch (e) {
-    console.error('Schema init error:', e.message);
+    logErr('Schema init error:', e);
   }
   try {
     await seed();
   } catch (e) {
-    console.error('Seed error:', e.message);
+    logErr('Seed error:', e);
   }
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
+  });
+  server.on('error', (err) => {
+    logErr('HTTP server error:', err);
   });
 }
 
-start();
+start().catch((e) => logErr('Fatal start():', e));
 

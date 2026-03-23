@@ -64,6 +64,8 @@
 
 ## Частые проблемы
 
+- В `server/.env` **не оставляйте старый `DATABASE_URL`**, если заданы `DB_HOST` / `DB_PASSWORD`: иначе раньше пароль брался из URL и ломался вход (`28P01`). Сейчас приоритет у явных `DB_*`; строку `DATABASE_URL` лучше удалить для локального Docker.
+- Уже установлен **PostgreSQL на Windows на порту 5432** → он занимает порт до запуска Docker. Остановите службу PostgreSQL в «Службы» или смените порт в `docker-compose.yml` и в `server/.env` (`DB_PORT`).
 - `28P01` / ошибка `postgres` в логах → неверный `DB_PASSWORD` в `server/.env` или контейнер не запущен (`npm run db:up`).
 - `vite is not recognized` → выполните `npm install`.
 - Порт 5432 занят другим PostgreSQL → остановите локальный сервис или смените порт в `docker-compose.yml` и в `server/.env`.

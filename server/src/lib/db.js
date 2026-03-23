@@ -13,8 +13,16 @@ const dbConfig = {
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 };
 
-// Если задан полный URL — используем его, но подставляем пароль строкой (на случай пустого .env)
-if (process.env.DATABASE_URL) {
+// DATABASE_URL только если нет явных настроек в .env (иначе старый URL перебивает DB_PASSWORD и ломает Docker)
+const hasExplicitDbEnv = Boolean(
+  process.env.DB_HOST ||
+    process.env.DB_USER ||
+    (process.env.DB_PASSWORD !== undefined && process.env.DB_PASSWORD !== '') ||
+    process.env.DB_NAME ||
+    process.env.DB_PORT
+);
+
+if (process.env.DATABASE_URL && !hasExplicitDbEnv) {
   try {
     const u = new URL(process.env.DATABASE_URL);
     dbConfig.user = u.username;
@@ -27,5 +35,15 @@ if (process.env.DATABASE_URL) {
   }
 }
 
-export const pool = new Pool(dbConfig);
+export const pool = new Pool({
+  ...dbConfig,
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 10_000
+});
+
+pool.on('error', (err) => {
+  const safe = err?.message ? String(err.message).replace(/[^\x20-\x7E]/g, '?') : String(err);
+  console.error(`[pg pool] idle client error code=${err?.code || 'n/a'} ${safe}`);
+});
 
