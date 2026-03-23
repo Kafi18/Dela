@@ -30,6 +30,13 @@ npm run setup
 
 3. Open `server/.env` and set a real Postgres password in `DB_PASSWORD`.
 
+Make sure Postgres is running and database `shareholder_voting` exists.
+If it does not exist, create it once:
+
+```bash
+createdb shareholder_voting
+```
+
 4. Start frontend and backend together:
 
 ```bash
@@ -57,4 +64,5 @@ npm run dev:server
 
 - `vite is not recognized` -> run `npm install`.
 - `client password must be a string` -> check `server/.env`, set `DB_PASSWORD`.
+- `database "shareholder_voting" does not exist` -> create DB with `createdb shareholder_voting`.
 - UI shows `Ошибка сервера` -> open backend health URL and backend terminal logs.

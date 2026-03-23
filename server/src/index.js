@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import votingRoutes from './routes/voting.js';
 import { pool } from './lib/db.js';
+import { ensureSchema } from './lib/bootstrap.js';
 import { seed } from './seed.js';
 
 dotenv.config();
@@ -32,6 +33,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/voting', votingRoutes);
 
 async function start() {
+  try {
+    await ensureSchema();
+  } catch (e) {
+    console.error('Schema init error:', e.message);
+  }
   try {
     await seed();
   } catch (e) {
