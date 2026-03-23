@@ -1,71 +1,69 @@
 # Shareholder Voting App
 
-## Quick start after clone
+## Самый простой запуск после `git clone` (Docker + автоматический `.env`)
 
-### One-click launcher (Windows)
+Нужны **Node.js** и **Docker Desktop** (Windows).
 
-Double-click `START_PROJECT.bat` in the project root.
+1. Установите зависимости:
+   ```bash
+   npm install
+   ```
 
-It will:
-- check Node.js,
-- install dependencies if `node_modules` is missing,
-- create `server/.env` from template if needed,
-- open backend and frontend in separate terminal windows.
+2. Один раз подготовьте окружение и поднимите базу:
+   ```bash
+   npm run start:docker
+   ```
+   Это:
+   - запишет `server/.env` с паролем `postgres` (как в `docker-compose.yml`);
+   - запустит PostgreSQL в Docker;
+   - дождётся порта 5432;
+   - запустит frontend + backend.
 
-If this is your first run, open `server/.env`, set `DB_PASSWORD`, and run `START_PROJECT.bat` again.
+3. Откройте `http://localhost:5173`.
+
+Учётные данные БД в Docker: пользователь `postgres`, пароль **`postgres`**, база **`shareholder_voting`**.
+
+### Windows: двойной клик
+
+Запустите **`START_PROJECT.bat`** — он сделает то же самое (если Docker установлен).
 
 ---
 
-1. Install dependencies:
+## Без Docker (свой PostgreSQL)
 
-```bash
-npm install
-```
+1. `npm install`
+2. `npm run setup` — создаст `server/.env` из примера
+3. Откройте `server/.env` и укажите **реальный** `DB_PASSWORD` и при необходимости `DB_USER`
+4. Создайте базу: `createdb shareholder_voting` (или через pgAdmin)
+5. `npm run dev:all`
 
-2. Create local server env file from template:
+---
 
-```bash
-npm run setup
-```
+## Полезные команды
 
-3. Open `server/.env` and set a real Postgres password in `DB_PASSWORD`.
+| Команда | Назначение |
+|--------|------------|
+| `npm run env:docker` | Перезаписать `server/.env` под Docker Postgres |
+| `npm run db:up` | `docker compose up -d` |
+| `npm run db:down` | Остановить контейнер БД |
+| `npm run db:wait` | Ждать, пока Postgres ответит на порту |
 
-The backend always reads **`server/.env`** (even if you run `npm` from the repo root), so credentials are not lost because of the working directory.
+---
 
-Make sure Postgres is running and database `shareholder_voting` exists.
-If it does not exist, create it once:
+## Важно про «старые аккаунты»
 
-```bash
-createdb shareholder_voting
-```
+Аккаунты и голоса хранятся **в PostgreSQL**, а не в GitHub. После скачивания репозитория на другой ПК вы получите **пустую** базу (или данные из своего Docker-тома). Чтобы перенести пользователей со старого компьютера — сделайте дамп на старом ПК (`pg_dump`) и восстановите на новом (`psql` / `pg_restore`).
 
-4. Start frontend and backend together:
+---
 
-```bash
-npm run dev:all
-```
+## Проверка backend
 
-Frontend: `http://localhost:5173`  
-Backend health check: `http://localhost:4000/api/health`
+- Health: `http://localhost:4000/api/health` → `{"status":"ok"}`
 
-## Alternative (separate terminals)
+---
 
-Terminal 1:
+## Частые проблемы
 
-```bash
-npm run dev
-```
-
-Terminal 2:
-
-```bash
-npm run dev:server
-```
-
-## Common issues
-
-- `vite is not recognized` -> run `npm install`.
-- `client password must be a string` -> check `server/.env`, set `DB_PASSWORD`.
-- `database "shareholder_voting" does not exist` -> create DB with `createdb shareholder_voting`.
-- UI shows `Ошибка сервера` -> open backend health URL and backend terminal logs.
-- Cannot log into your real account -> PostgreSQL must be reachable and `DB_PASSWORD` in `server/.env` must match your Postgres user. Until then only demo logins work (`user@example.com` / `user123`).
+- `28P01` / ошибка `postgres` в логах → неверный `DB_PASSWORD` в `server/.env` или контейнер не запущен (`npm run db:up`).
+- `vite is not recognized` → выполните `npm install`.
+- Порт 5432 занят другим PostgreSQL → остановите локальный сервис или смените порт в `docker-compose.yml` и в `server/.env`.

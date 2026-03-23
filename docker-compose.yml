@@ -1,0 +1,18 @@
+# Локальная PostgreSQL для разработки (после clone — без ручной настройки пароля).
+# Запуск: npm run db:up
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dela-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shareholder_voting
+    ports:
+      - "5432:5432"
+    volumes:
+      - dela_pgdata:/var/lib/postgresql/data
+
+volumes:
+  dela_pgdata:
