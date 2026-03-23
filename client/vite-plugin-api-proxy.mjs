@@ -7,7 +7,29 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..');
 const portFile = path.join(repoRoot, '.dev-api-port');
 
-/** Прокси /api → бэкенд; порт читается из .dev-api-port (пишет сервер при старте). */
+function readBackendPort() {
+  let port = 4000;
+  try {
+    if (fs.existsSync(portFile)) {
+      const n = parseInt(fs.readFileSync(portFile, 'utf8').trim(), 10);
+      if (Number.isInteger(n) && n > 0 && n < 65536) port = n;
+    }
+  } catch {
+    /* ignore */
+  }
+  return port;
+}
+
+function filterHeaders(raw, port) {
+  const out = { ...raw };
+  delete out.host;
+  delete out.connection;
+  delete out['content-length'];
+  out.host = `127.0.0.1:${port}`;
+  return out;
+}
+
+/** Прокси /api → бэкенд; порт из .dev-api-port (обновляется на каждый запрос). */
 export function apiProxyDynamic() {
   return {
     name: 'api-proxy-dynamic-port',
@@ -16,22 +38,13 @@ export function apiProxyDynamic() {
         const url = req.url || '';
         if (!url.startsWith('/api')) return next();
 
-        let port = 4000;
-        try {
-          if (fs.existsSync(portFile)) {
-            const n = parseInt(fs.readFileSync(portFile, 'utf8').trim(), 10);
-            if (Number.isInteger(n) && n > 0 && n < 65536) port = n;
-          }
-        } catch {
-          /* ignore */
-        }
-
+        const port = readBackendPort();
         const opts = {
           hostname: '127.0.0.1',
           port,
           path: url,
           method: req.method,
-          headers: { ...req.headers, host: `127.0.0.1:${port}` }
+          headers: filterHeaders(req.headers, port)
         };
 
         const proxyReq = http.request(opts, (proxyRes) => {
@@ -45,12 +58,18 @@ export function apiProxyDynamic() {
             res.end(
               JSON.stringify({
                 message:
-                  'Бэкенд недоступен. Запустите сервер (npm run dev:server) и дождитесь строки «Server listening».'
+                  'Бэкенд недоступен. Дождитесь строки «Server listening» в окне backend или проверьте .dev-api-port.'
               })
             );
           }
         });
-        req.pipe(proxyReq);
+
+        // GET/HEAD без тела — pipe(req) иногда не завершает запрос корректно
+        if (req.method === 'GET' || req.method === 'HEAD') {
+          proxyReq.end();
+        } else {
+          req.pipe(proxyReq);
+        }
       });
     }
   };

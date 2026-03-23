@@ -18,7 +18,7 @@
     "start:docker": "npm run env:docker && npm run db:up && npm run db:wait && npm run dev:all",
     "dev": "npm run dev --workspace client",
     "dev:server": "npm run dev --workspace server",
-    "dev:all": "concurrently -n server,client -c yellow,cyan \"npm run dev:server\" \"npm run dev\"",
+    "dev:all": "concurrently -n server,client -c yellow,cyan \"npm run dev:server\" \"node scripts/wait-dev-api-port.mjs && npm run dev\"",
     "start:local": "npm run setup && npm run dev:all",
     "start:oneclick": "npm install && npm run env:embedded && npm run dev:all"
   },
