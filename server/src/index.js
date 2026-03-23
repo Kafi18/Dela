@@ -1,14 +1,12 @@
+import './lib/env.js';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import votingRoutes from './routes/voting.js';
 import { pool } from './lib/db.js';
 import { ensureSchema } from './lib/bootstrap.js';
 import { seed } from './seed.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;

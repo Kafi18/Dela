@@ -30,6 +30,8 @@ npm run setup
 
 3. Open `server/.env` and set a real Postgres password in `DB_PASSWORD`.
 
+The backend always reads **`server/.env`** (even if you run `npm` from the repo root), so credentials are not lost because of the working directory.
+
 Make sure Postgres is running and database `shareholder_voting` exists.
 If it does not exist, create it once:
 
@@ -66,3 +68,4 @@ npm run dev:server
 - `client password must be a string` -> check `server/.env`, set `DB_PASSWORD`.
 - `database "shareholder_voting" does not exist` -> create DB with `createdb shareholder_voting`.
 - UI shows `Ошибка сервера` -> open backend health URL and backend terminal logs.
+- Cannot log into your real account -> PostgreSQL must be reachable and `DB_PASSWORD` in `server/.env` must match your Postgres user. Until then only demo logins work (`user@example.com` / `user123`).

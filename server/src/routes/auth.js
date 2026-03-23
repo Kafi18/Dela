@@ -39,6 +39,14 @@ function isDbAuthError(e) {
   return e?.code === '28P01' || e?.routine === 'auth_failed';
 }
 
+/** БД недоступна: неверный пароль, не запущен PostgreSQL, нет базы и т.п. */
+function isDbUnavailable(e) {
+  if (isDbAuthError(e)) return true;
+  if (e?.code === 'ECONNREFUSED' || e?.code === 'ENOTFOUND') return true;
+  if (e?.code === '3D000') return true; // database does not exist
+  return false;
+}
+
 // Simple mock captcha validation: expect captcha === "1234"
 function validateCaptcha(captcha) {
   return captcha === '1234';
@@ -78,7 +86,7 @@ router.post('/register', async (req, res) => {
       user
     });
   } catch (e) {
-    if (isDbAuthError(e)) {
+    if (isDbUnavailable(e)) {
       const { email, password, fullName } = req.body;
       if (!email || !password || !fullName) {
         return res.status(400).json({ message: 'Заполните все поля' });
@@ -145,19 +153,25 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (e) {
-    if (isDbAuthError(e)) {
+    if (isDbUnavailable(e)) {
       const { email, password } = req.body;
       const user = demoUsers.find((u) => u.email.toLowerCase() === String(email).toLowerCase());
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: 'Неверный логин или пароль' });
+      if (user && user.password === password) {
+        if (!user.isActive) {
+          return res.status(403).json({ message: 'Пользователь деактивирован' });
+        }
+        const token = generateToken(user);
+        return res.json({
+          token,
+          user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role }
+        });
       }
-      if (!user.isActive) {
-        return res.status(403).json({ message: 'Пользователь деактивирован' });
-      }
-      const token = generateToken(user);
-      return res.json({
-        token,
-        user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role }
+      // Аккаунты из PostgreSQL недоступны, пока БД не подключена — не путаем с «неверным паролем»
+      return res.status(503).json({
+        message:
+          'База данных не подключена (неверный пароль PostgreSQL или нет файла server/.env). ' +
+          'Скопируйте server/.env.example → server/.env и укажите правильный DB_PASSWORD. ' +
+          'Пока можно войти только в демо: user@example.com / user123 или admin@example.com / admin123'
       });
     }
     console.error(e);

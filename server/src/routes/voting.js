@@ -4,8 +4,11 @@ import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-function isDbAuthError(e) {
-  return e?.code === '28P01' || e?.routine === 'auth_failed';
+function isDbUnavailable(e) {
+  if (e?.code === '28P01' || e?.routine === 'auth_failed') return true;
+  if (e?.code === 'ECONNREFUSED' || e?.code === 'ENOTFOUND') return true;
+  if (e?.code === '3D000') return true;
+  return false;
 }
 
 // Демонстрационные данные собраний для главной страницы и детального просмотра
@@ -259,7 +262,7 @@ router.get('/summary', async (req, res) => {
       shareholders: shareholdersRows
     });
   } catch (e) {
-    if (isDbAuthError(e)) {
+    if (isDbUnavailable(e)) {
       const meetingsRows = demoMeetings();
       const topicsRows = [
         {
@@ -335,7 +338,7 @@ router.get('/meeting/:id', async (req, res) => {
 
     res.json(demo);
   } catch (e) {
-    if (isDbAuthError(e)) {
+    if (isDbUnavailable(e)) {
       const demo = demoMeetings().find((m) => m.id === Number(req.params.id));
       if (!demo) {
         return res.status(404).json({ message: 'Собрание не найдено' });
@@ -382,7 +385,7 @@ router.get('/topics', requireAuth, async (req, res) => {
     // Порядок как на первой вкладке: по хронологии собраний (сначала ближайшие), затем темы по id
     res.json(rows);
   } catch (e) {
-    if (isDbAuthError(e)) {
+    if (isDbUnavailable(e)) {
       const rows = [
         {
           id: 1,
@@ -439,7 +442,7 @@ router.post('/vote', requireAuth, async (req, res) => {
 
     res.json({ message: 'Голос учтён' });
   } catch (e) {
-    if (isDbAuthError(e)) {
+    if (isDbUnavailable(e)) {
       return res.json({ message: 'Голос учтён (демо-режим без БД)' });
     }
     console.error(e);
