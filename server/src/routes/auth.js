@@ -166,12 +166,29 @@ router.post('/login', async (req, res) => {
           user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role }
         });
       }
-      // Аккаунты из PostgreSQL недоступны, пока БД не подключена — не путаем с «неверным паролем»
-      return res.status(503).json({
-        message:
-          'База данных не подключена (неверный пароль PostgreSQL или нет файла server/.env). ' +
-          'Скопируйте server/.env.example → server/.env и укажите правильный DB_PASSWORD. ' +
-          'Пока можно войти только в демо: user@example.com / user123 или admin@example.com / admin123'
+      // Fallback без БД: разрешаем вход по любым данным, чтобы интерфейс был доступен после clone.
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Введите email и пароль' });
+      }
+      const derivedName = String(email).split('@')[0] || 'Пользователь';
+      const fallbackUser = {
+        id: demoUsers.length + 1000,
+        email: String(email),
+        fullName: derivedName,
+        role: 'user',
+        isActive: true
+      };
+      const token = generateToken(fallbackUser);
+      return res.json({
+        token,
+        user: {
+          id: fallbackUser.id,
+          email: fallbackUser.email,
+          fullName: fallbackUser.fullName,
+          role: fallbackUser.role
+        },
+        warning:
+          'Вход выполнен в fallback-режиме без БД. Для реальных аккаунтов настройте server/.env и PostgreSQL.'
       });
     }
     console.error(e);
