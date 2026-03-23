@@ -1,48 +1,48 @@
 # Shareholder Voting App
 
-## Самый простой запуск после `git clone` (Docker + автоматический `.env`)
+## Запуск в один клик после `git clone` (без PostgreSQL и без Docker)
 
-Нужны **Node.js** и **Docker Desktop** (Windows).
+1. Установите [Node.js LTS](https://nodejs.org).
+2. Скачайте репозиторий и в корне проекта выполните **одно** из:
+   - **Windows:** дважды нажмите **`START_PROJECT.bat`**
+   - **Или в терминале:**
+     ```bash
+     npm install
+     npm start
+     ```
+     (`npm start` сам создаст `server/.env`, если его ещё нет, и запустит фронт + бэкенд.)
 
-1. Установите зависимости:
-   ```bash
-   npm install
-   ```
+3. Откройте **http://localhost:5173**  
+4. Проверка API: **http://localhost:4000/api/health** → `{"status":"ok","embeddedDb":true}`
 
-2. Один раз подготовьте окружение и поднимите базу:
-   ```bash
-   npm run start:docker
-   ```
-   Это:
-   - запишет `server/.env` с паролем `postgres` (как в `docker-compose.yml`);
-   - запустит PostgreSQL в Docker;
-   - дождётся порта 5432;
-   - запустит frontend + backend.
+### Как это устроено
 
-3. Откройте `http://localhost:5173`.
+По умолчанию используется **встроенная база (pg-mem)** — это эмуляция PostgreSQL в памяти Node.js. **Отдельно ставить PostgreSQL не нужно.** Регистрация и вход работают сразу.
 
-Учётные данные БД в Docker: пользователь `postgres`, пароль **`postgres`**, база **`shareholder_voting`**.
-
-### Windows: двойной клик
-
-Запустите **`START_PROJECT.bat`** — он сделает то же самое (если Docker установлен).
+**Важно:** данные **сбрасываются при перезапуске** сервера (память). Для постоянного хранения используйте настоящий PostgreSQL (ниже).
 
 ---
 
-## Без Docker (свой PostgreSQL)
+## Постоянная база: Docker
 
-1. `npm install`
-2. Один раз укажите пароль пользователя `postgres` (тот, что вы задали при установке PostgreSQL на Windows):
+```bash
+npm install
+npm run start:docker
+```
 
-   ```powershell
-   npm run env:localpg -- ВАШ_ПАРОЛЬ
-   ```
+Нужны Docker Desktop и интернет. В `.env` будет `DELA_EMBEDDED_DB=false` и параметры как в `docker-compose.yml` (пользователь `postgres`, пароль `postgres`).
 
-   Скрипт сам запишет `server/.env` и создаст базу `shareholder_voting`, если её ещё нет.
+---
 
-3. `npm run dev:all`
+## Постоянная база: локальный PostgreSQL (Windows)
 
-Альтернатива вручную: `npm run setup`, правка `server/.env`, затем `createdb shareholder_voting`.
+```bash
+npm install
+npm run env:localpg -- ВАШ_ПАРОЛЬ_POSTGRES
+npm run dev:all
+```
+
+Скрипт создаст базу `shareholder_voting` и запишет `server/.env` с `DELA_EMBEDDED_DB=false`.
 
 ---
 
@@ -50,29 +50,28 @@
 
 | Команда | Назначение |
 |--------|------------|
-| `npm run env:docker` | Перезаписать `server/.env` под Docker Postgres |
-| `npm run db:up` | `docker compose up -d` |
-| `npm run db:down` | Остановить контейнер БД |
-| `npm run db:wait` | Ждать, пока Postgres ответит на порту |
+| `npm start` | Создать `server/.env` (если нет) + фронт + бэкенд |
+| `npm run start:oneclick` | `npm install` + то же самое |
+| `npm run env:embedded` | Только записать режим встроенной БД |
+| `npm run env:embedded -- --force` | Перезаписать `server/.env` |
+| `npm run env:docker` | `.env` под Docker Postgres |
+| `npm run dev:all` | Только запуск (без смены `.env`) |
 
 ---
 
-## Важно про «старые аккаунты»
+## Переменная `DELA_EMBEDDED_DB`
 
-Аккаунты и голоса хранятся **в PostgreSQL**, а не в GitHub. После скачивания репозитория на другой ПК вы получите **пустую** базу (или данные из своего Docker-тома). Чтобы перенести пользователей со старого компьютера — сделайте дамп на старом ПК (`pg_dump`) и восстановите на новом (`psql` / `pg_restore`).
-
----
-
-## Проверка backend
-
-- Health: `http://localhost:4000/api/health` → `{"status":"ok"}`
+- **`true` или не указано вместе с нашим шаблоном** — встроенная БД (после `env:embedded` / `START_PROJECT.bat`).
+- **`false`** — настоящий PostgreSQL; нужны `DB_*` в `server/.env`.
 
 ---
 
-## Частые проблемы
+## Капча на формах входа/регистрации
 
-- В `server/.env` **не оставляйте старый `DATABASE_URL`**, если заданы `DB_HOST` / `DB_PASSWORD`: иначе раньше пароль брался из URL и ломался вход (`28P01`). Сейчас приоритет у явных `DB_*`; строку `DATABASE_URL` лучше удалить для локального Docker.
-- Уже установлен **PostgreSQL на Windows на порту 5432** → он занимает порт до запуска Docker. Остановите службу PostgreSQL в «Службы» или смените порт в `docker-compose.yml` и в `server/.env` (`DB_PORT`).
-- `28P01` / ошибка `postgres` в логах → неверный `DB_PASSWORD` в `server/.env` или контейнер не запущен (`npm run db:up`).
-- `vite is not recognized` → выполните `npm install`.
-- Порт 5432 занят другим PostgreSQL → остановите локальный сервис или смените порт в `docker-compose.yml` и в `server/.env`.
+Введите **`1234`**.
+
+---
+
+## Аккаунты и GitHub
+
+Пользователи хранятся в базе, **не в репозитории**. На другом ПК после clone — новая (пустая) встроенная БД или ваша PostgreSQL.

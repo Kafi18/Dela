@@ -27,4 +27,4 @@ const template = fs.readFileSync(examplePath, 'utf8');
 fs.writeFileSync(envPath, template, 'utf8');
 
 log('[setup] Created server/.env from server/.env.example.');
-log('[setup] Либо запустите Docker: npm run db:up (пароль postgres), либо отредактируйте DB_PASSWORD под свой PostgreSQL.');
+log('[setup] По умолчанию в .env.example включена встроенная БД (DELA_EMBEDDED_DB=true). Для PostgreSQL см. README.');

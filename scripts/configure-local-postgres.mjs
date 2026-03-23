@@ -57,6 +57,7 @@ function escapeEnvValue(val) {
 }
 
 const envBlock = `# Локальный PostgreSQL (npm run env:localpg)
+DELA_EMBEDDED_DB=false
 # Не задавайте DATABASE_URL — используйте только DB_* ниже.
 DB_HOST=localhost
 DB_PORT=5432

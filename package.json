@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "setup": "node scripts/setup-env.mjs",
+    "env:embedded": "node scripts/apply-embedded-env.mjs",
+    "start": "npm run env:embedded && npm run dev:all",
     "env:docker": "node scripts/apply-docker-env.mjs",
     "env:localpg": "node scripts/configure-local-postgres.mjs",
     "db:up": "docker compose up -d",
@@ -17,7 +19,8 @@
     "dev": "npm run dev --workspace client",
     "dev:server": "npm run dev --workspace server",
     "dev:all": "concurrently -n server,client -c yellow,cyan \"npm run dev:server\" \"npm run dev\"",
-    "start:local": "npm run setup && npm run dev:all"
+    "start:local": "npm run setup && npm run dev:all",
+    "start:oneclick": "npm install && npm run env:embedded && npm run dev:all"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

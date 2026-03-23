@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import votingRoutes from './routes/voting.js';
-import { pool } from './lib/db.js';
+import { pool, useEmbeddedDb } from './lib/db.js';
 import { ensureSchema } from './lib/bootstrap.js';
 import { seed } from './seed.js';
 
@@ -30,9 +30,9 @@ app.use(cookieParser());
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
-    res.json({ status: 'ok' });
+    res.json({ status: 'ok', embeddedDb: useEmbeddedDb });
   } catch (e) {
-    res.status(500).json({ status: 'error' });
+    res.status(500).json({ status: 'error', embeddedDb: useEmbeddedDb });
   }
 });
 
