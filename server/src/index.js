@@ -11,6 +11,7 @@ import votingRoutes from './routes/voting.js';
 import { pool, useEmbeddedDb } from './lib/db.js';
 import { ensureSchema } from './lib/bootstrap.js';
 import { seed } from './seed.js';
+import { applyEmbeddedPersistenceToDb } from './lib/embeddedPersistence.js';
 
 function logErr(label, e) {
   const safe = e?.message ? String(e.message).replace(/[^\x20-\x7E\n]/g, '?') : String(e);
@@ -23,16 +24,6 @@ process.on('unhandledRejection', (reason) => {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const portFile = path.join(repoRoot, '.dev-api-port');
-
-function cleanupPortFile() {
-  try {
-    fs.unlinkSync(portFile);
-  } catch {
-    /* ignore */
-  }
-}
-process.on('SIGINT', cleanupPortFile);
-process.on('SIGTERM', cleanupPortFile);
 
 const app = express();
 const preferredPort = parseInt(process.env.PORT || '4000', 10);
@@ -108,6 +99,13 @@ async function start() {
     await seed();
   } catch (e) {
     logErr('Seed error:', e);
+  }
+  if (useEmbeddedDb) {
+    try {
+      await applyEmbeddedPersistenceToDb(pool);
+    } catch (e) {
+      logErr('Embedded persistence error:', e);
+    }
   }
   const server = await listenWithFallback(app, preferredPort);
   server.on('error', (err) => logErr('HTTP server error:', err));

@@ -1,7 +1,8 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { pool } from '../lib/db.js';
+import { pool, useEmbeddedDb } from '../lib/db.js';
+import { upsertEmbeddedUser } from '../lib/embeddedPersistence.js';
 
 const router = express.Router();
 
@@ -80,6 +81,19 @@ router.post('/register', async (req, res) => {
 
     const user = result.rows[0];
     const token = generateToken(user);
+
+    if (useEmbeddedDb) {
+      // Встроенная БД (pg-mem) живёт в памяти — сохраняем учётку в файл,
+      // чтобы она не пропадала после clone/перезапуска.
+      upsertEmbeddedUser({
+        email: user.email,
+        password_hash: passwordHash,
+        full_name: user.full_name,
+        role: user.role,
+        is_active: true,
+        created_at: new Date().toISOString()
+      });
+    }
 
     res.json({
       token,

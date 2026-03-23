@@ -1,6 +1,7 @@
 import express from 'express';
-import { pool } from '../lib/db.js';
+import { pool, useEmbeddedDb } from '../lib/db.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import { upsertEmbeddedVote } from '../lib/embeddedPersistence.js';
 
 const router = express.Router();
 
@@ -435,10 +436,24 @@ router.post('/vote', requireAuth, async (req, res) => {
       return res.status(400).json({ message: 'Вы уже проголосовали по этой теме.' });
     }
 
-    await pool.query(
-      'INSERT INTO votes (user_id, topic_id, choice) VALUES ($1, $2, $3)',
-      [userId, topicId, choice]
+    const createdAt = new Date().toISOString();
+    const inserted = await pool.query(
+      `INSERT INTO votes (user_id, topic_id, choice, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING created_at, updated_at`,
+      [userId, topicId, choice, createdAt, null]
     );
+
+    if (useEmbeddedDb) {
+      // Пишем голос в файл, чтобы он не пропал после перезапуска встроенной БД.
+      upsertEmbeddedVote({
+        user_email: req.user.email,
+        topic_id: topicId,
+        choice,
+        created_at: inserted.rows[0]?.created_at,
+        updated_at: inserted.rows[0]?.updated_at
+      });
+    }
 
     res.json({ message: 'Голос учтён' });
   } catch (e) {

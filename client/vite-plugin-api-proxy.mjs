@@ -8,16 +8,15 @@ const repoRoot = path.resolve(__dirname, '..');
 const portFile = path.join(repoRoot, '.dev-api-port');
 
 function readBackendPort() {
-  let port = 4000;
   try {
     if (fs.existsSync(portFile)) {
       const n = parseInt(fs.readFileSync(portFile, 'utf8').trim(), 10);
-      if (Number.isInteger(n) && n > 0 && n < 65536) port = n;
+      if (Number.isInteger(n) && n > 0 && n < 65536) return n;
     }
   } catch {
     /* ignore */
   }
-  return port;
+  return null;
 }
 
 function filterHeaders(raw, port) {
@@ -39,6 +38,17 @@ export function apiProxyDynamic() {
         if (!url.startsWith('/api')) return next();
 
         const port = readBackendPort();
+        if (!port) {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json; charset=utf-8');
+          res.end(
+            JSON.stringify({
+              message:
+                'Бэкенд ещё не запущен (или не выбран порт). Подождите 1-2 секунды или проверьте окно backend.'
+            })
+          );
+          return;
+        }
         const opts = {
           hostname: '127.0.0.1',
           port,
