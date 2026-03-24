@@ -21,6 +21,7 @@ call npm run env:embedded
 if errorlevel 1 ( pause & exit /b 1 )
 
 echo [4/4] Запуск backend + frontend...
+if exist "%~dp0.dev-api-port" del /q "%~dp0.dev-api-port" 2>nul
 start "Dela Backend" cmd /k "cd /d %~dp0 && npm run dev:server"
 start "Dela Frontend" cmd /k "cd /d %~dp0 && node scripts/wait-dev-api-port.mjs && npm run dev"
 
@@ -28,5 +29,5 @@ echo.
 echo Откройте http://localhost:5173
 echo Проверка API через сайт: http://localhost:5173  (запросы идут на /api)
 echo.
-echo Данные хранятся в памяти до перезапуска сервера. Для постоянной БД: Docker или PostgreSQL + DELA_EMBEDDED_DB=false (см. README).
+echo Встроенная БД: пользователи/голоса сохраняются в %%AppData%%\Dela\embedded-db.json. Для PostgreSQL см. README.
 pause

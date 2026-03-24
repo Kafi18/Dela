@@ -92,6 +92,11 @@ async function listenWithFallback(expressApp, firstPort) {
 
 async function start() {
   try {
+    if (fs.existsSync(portFile)) fs.unlinkSync(portFile);
+  } catch (e) {
+    console.warn('[server] не удалось удалить старый .dev-api-port:', e.message);
+  }
+  try {
     await ensureSchema();
   } catch (e) {
     logErr('Schema init error:', e);
