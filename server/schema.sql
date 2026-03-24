@@ -40,4 +40,3 @@ CREATE TABLE IF NOT EXISTS votes (
 
 CREATE INDEX IF NOT EXISTS idx_votes_topic ON votes(topic_id);
 CREATE INDEX IF NOT EXISTS idx_votes_user ON votes(user_id);
-

@@ -26,5 +26,5 @@ GRANT ALL PRIVILEGES ON DATABASE shareholder_voting TO shareholder_app;
 -- Подключение к созданной БД и создание структуры
 \connect shareholder_voting;
 
-\i schema.sql
+\i dela-database.sql
 
